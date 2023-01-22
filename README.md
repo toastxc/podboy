@@ -1,14 +1,31 @@
 <h1 align="center">
-  Template Repo
-  
-  [![Stars](https://img.shields.io/github/stars/DeclanChidlow/Template?style=flat-square&logoColor=white)](https://github.com/DeclanChidlow/Template/stargazers)
-  [![Forks](https://img.shields.io/github/forks/DeclanChidlow/Template?style=flat-square&logoColor=white)](https://github.com/DeclanChidlow/Template/network/members)
-  [![Pull Requests](https://img.shields.io/github/issues-pr/DeclanChidlow/Template?style=flat-square&logoColor=white)](https://github.com/DeclanChidlow/Template/pulls)
-  [![Issues](https://img.shields.io/github/issues/DeclanChidlow/Template?style=flat-square&logoColor=white)](https://github.com/DeclanChidlow/Template/issues)
-  [![Contributors](https://img.shields.io/github/contributors/DeclanChidlow/Template?style=flat-square&logoColor=white)](https://github.com/DeclanChidlow/Template/graphs/contributors)
-  [![Licence](https://img.shields.io/github/license/DeclanChidlow/Template?style=flat-square&logoColor=white)](https://github.com/DeclanChidlow/Template/blob/main/LICENCE)
+  PodboY
+
+
+
 </h1>
 
-A template for my GitHub repositories.
+Podboy (styled podboy or PodboY) is a simple script manager for podman, similar to docker's daemon.
+
+
+### Testing
+```bash
+git clone https://github.com/toastxc/podboy.git
+cd podboy
+cargo b
+```
+
+### Installation 
+```bash
+git clone https://github.com/toastxc/podboy.git
+cd podboy
+cargo b -r
+sudo cp ./target/release/podboy /usr/bin/
+```
+
+### Removal
+```bash
+sudo rm /usr/bin/podboy
+```
 
 ![LGPLv3 Badge](/README_RESOURCES/LGPLv3%20Logo.svg)
