@@ -6,7 +6,7 @@ pub fn create_systemd(container: &str, script: &str) {
     let path = format!("/home/{}/.config/systemd/user/{container}.service", user);
 
     if fs::read(&path).is_ok() {
-        println!("podman script already exits!");
+        println!("Daemon script already exits!");
         return;
     };
 
@@ -14,9 +14,12 @@ pub fn create_systemd(container: &str, script: &str) {
 
     fs::write(&path, script).unwrap();
 
-    bash_exec("systemctl --user daemon-reload").unwrap();
+    let result = match bash_exec("systemctl --user daemon-reload") {
+        Ok(_) => String::from("Script successfully added"),
+        Err(e) => e.to_string(),
+    };
 
-    println!("completed successfully!!");
+    println!("{result}");
 }
 
 pub fn rm_systemd(container: &str) {
