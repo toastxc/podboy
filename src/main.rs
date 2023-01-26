@@ -1,4 +1,3 @@
-// stdin
 use std::env::Args;
 
 use std::io::stdin;
@@ -12,10 +11,10 @@ use crate::{bash::bash_exec, systemd::create_systemd};
 
 const HELP: &str = "generate <container>
 remove <container>
-
+regen <container>
+stauts <container>
 start <container>
 stop <container>
-
 enable <container>
 disabe <container>";
 
@@ -26,7 +25,6 @@ fn main() {
         println!("{HELP}");
         return;
     };
-
     if args.len() < 2 {
         println!("{HELP}");
         return;
@@ -35,23 +33,53 @@ fn main() {
     match &args[0] as &str {
         "generate" | "gen" | "g" => cli_generate(args),
         "remove" | "rm" | "r" => rm_systemd(&args[1]),
+        "regen" | "regenerate" | "rg" => {
+            rm_systemd(&args[1]);
+            cli_generate(args);
+        }
         _ => cli_systemd(args),
     }
 }
 
 // alias for basic systemd stuff
 fn cli_systemd(args: Vec<String>) {
-    let wordlist = vec!["start", "enable", "stop", "disable"];
+    let wordlist = vec!["start", "enable", "status", "stop", "disable"];
 
     let arg = format!("systemctl --user {} {}", args[0], args[1]);
-    println!("{arg}");
-    if wordlist.contains(&args[0].as_str()) {
-        bash_exec(&arg).unwrap();
+
+    let result = if wordlist.contains(&args[0].as_str()) {
+        match bash_exec(&arg) {
+            Ok(a) => status_readable(a),
+            Err(e) => e.to_string(),
+        }
+    } else {
+        String::from(HELP)
     };
+    println!("{}", result)
+}
+
+fn status_readable(a: String) -> String {
+    let mut newstr = String::new();
+    let mut iter = 8;
+
+    for x in a.lines() {
+        newstr += &format!("\n{}", x);
+        iter -= 1;
+
+        if iter == 0 {
+            return newstr;
+        }
+    }
+    newstr
 }
 
 fn cli_generate(args: Vec<String>) {
-    let script = match { bash_exec(&format!("podman generate systemd {}", &args[1])) } {
+    let script = match {
+        bash_exec(&format!(
+            "podman generate systemd {} --restart-policy always",
+            &args[1]
+        ))
+    } {
         Ok(a) => a,
         Err(e) => {
             println!("{e}");
@@ -60,9 +88,7 @@ fn cli_generate(args: Vec<String>) {
     };
 
     println!(
-        "    Successfully generated
-    the container {} will be pushed to user systemd
-    Do you wish to continue?",
+        "Successfully generated script\nThe container `{}` will be added to daemon\nDo you wish to continue?\n(Y/n)",
         args[1]
     );
 
@@ -70,7 +96,7 @@ fn cli_generate(args: Vec<String>) {
     stdin().read_line(&mut user_input).unwrap();
 
     if let "y" | "Y" | "yes" | "Yes" = user_input.trim() as &str {
-        println!("generating pb_{}.service...", args[1]);
+        println!("Generating {}.service...", args[1]);
         create_systemd(&args[1], &script);
     };
 }
