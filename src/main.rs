@@ -1,13 +1,13 @@
 use std::env::Args;
-
 use std::io::stdin;
 
 pub mod bash;
 pub mod systemd;
 
-use systemd::rm_systemd;
-
-use crate::{bash::bash_exec, systemd::create_systemd};
+use crate::{
+    bash::bash_exec,
+    systemd::{create_systemd, rm_systemd},
+};
 
 const HELP: &str = "generate <container>
 remove <container>
