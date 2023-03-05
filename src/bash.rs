@@ -8,7 +8,7 @@ pub fn bash_exec(args: &str) -> Result<String, BashErr> {
 
     match (res.status.success(), res) {
         (true, a) => Ok(String::from_utf8(a.stdout).unwrap().trim().to_string()),
-        (false, e) => Err(BashErr(String::from_utf8(e.stderr).unwrap())),
+        (false, e) => Err(BashErr(String::from_utf8(e.stdout).unwrap())),
     }
 }
 
