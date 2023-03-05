@@ -1,7 +1,8 @@
 <h1 align="center">
   PodboY
 
-
+<h1 align="center">
+  <img src="https://github.com/toastxc/podboy/blob/main/README_RESOURCES/podboy.svg" alt="Geometric Logo" width="30%" height="30%">
 
 </h1>
 
