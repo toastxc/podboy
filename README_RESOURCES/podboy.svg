@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   version="1.1"
+   id="svg305"
+   width="195.50867"
+   height="231.35796"
+   viewBox="0 0 195.50867 231.35796"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs309" />
+  <g
+     id="g311"
+     transform="translate(277.69702,199.11795)">
+    <g
+       id="g2678">
+      <path
+         style="fill:#201a26;fill-opacity:1;stroke:#ae1919;stroke-width:0;stroke-opacity:0.451064"
+         id="path2643"
+         d="m -145.17331,-80.644627 -97.75409,-5e-6 -48.87704,-84.657528 48.87705,-84.65752 97.75408,0 48.877045,84.65753 z"
+         transform="translate(14.107918,50.841727)" />
+      <g
+         id="g2673">
+        <path
+           style="fill:#30d475;fill-opacity:1;stroke:#ae1919;stroke-width:0;stroke-opacity:0.451064"
+           id="path1812"
+           d="M 104.33436,121.69571 -28.992474,44.719421 104.33437,-32.256859 Z"
+           transform="matrix(1.0975047,0,0,1.0975047,-245.87763,-163.5735)" />
+      </g>
+    </g>
+    <g
+       id="g4560"
+       transform="translate(-14,-10)">
+      <text
+         xml:space="preserve"
+         style="font-size:42.6667px;fill:#1a2622;fill-opacity:1;stroke:#ae1919;stroke-width:0;stroke-opacity:0.451064"
+         x="-241.5"
+         y="32"
+         id="text3566"><tspan
+           id="tspan3564"
+           x="-241.5"
+           y="32">po     oy</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-size:42.6667px;fill:#30d475;fill-opacity:1;stroke:#3fdd8c;stroke-width:0;stroke-opacity:0.451064"
+         x="-243"
+         y="32.093338"
+         id="text3566-3"><tspan
+           id="tspan3564-6"
+           x="-243"
+           y="32.093338">     db</tspan></text>
+    </g>
+  </g>
+</svg>
