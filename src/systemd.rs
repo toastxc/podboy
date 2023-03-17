@@ -3,7 +3,8 @@ use std::fs;
 
 pub fn create_systemd(container: &str, script: &str) {
     let user = bash_exec("echo $USER").unwrap();
-    let path = format!("/home/{}/.config/systemd/user/{container}.service", user);
+
+    let path = format!("/home/{user}/.config/systemd/user/{container}.service");
 
     if fs::read(&path).is_ok() {
         println!("Daemon script already exits!");
@@ -24,7 +25,7 @@ pub fn create_systemd(container: &str, script: &str) {
 
 pub fn rm_systemd(container: &str) {
     let user = bash_exec("echo $USER").unwrap();
-    let path = format!("/home/{}/.config/systemd/user/{container}.service", user);
+    let path = format!("/home/{user}/.config/systemd/user/{container}.service");
 
     if let Err(e) = fs::read(&path) {
         println!("Could not find file\n{e}");
