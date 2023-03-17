@@ -5,20 +5,21 @@ pub mod bash;
 pub mod systemd;
 
 use crate::{
-    bash::bash_exec,
+    bash::{bash_exec, bash_spawn},
     systemd::{create_systemd, rm_systemd},
 };
 
 const HELP: &str = "generate <container>
 remove <container>
 regen <container>
-stauts <container>
+status <container>
 start <container>
 stop <container>
 enable <container>
 disabe <container>";
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let args: Vec<String> = argon(std::env::args());
 
     if args.is_empty() {
@@ -37,40 +38,19 @@ fn main() {
             rm_systemd(&args[1]);
             cli_generate(args);
         }
-        _ => cli_systemd(args),
+        _ => cli_systemd(args).await,
     }
 }
 
 // alias for basic systemd stuff
-fn cli_systemd(args: Vec<String>) {
-    let wordlist = vec!["start", "enable", "status", "stop", "disable"];
+async fn cli_systemd(args: Vec<String>) {
+    let wordlist = vec!["start", "enable", "status", "stop", "disable", "restart"];
 
     let arg = format!("systemctl --user {} {}", args[0], args[1]);
 
-    let result = if wordlist.contains(&args[0].as_str()) {
-        match bash_exec(&arg) {
-            Ok(a) => status_readable(a),
-            Err(e) => e.to_string(),
-        }
-    } else {
-        String::from(HELP)
+    if wordlist.contains(&args[0].as_str()) {
+        bash_spawn(&arg).await;
     };
-    println!("{}", result)
-}
-
-fn status_readable(a: String) -> String {
-    let mut newstr = String::new();
-    let mut iter = 8;
-
-    for x in a.lines() {
-        newstr += &format!("\n{}", x);
-        iter -= 1;
-
-        if iter == 0 {
-            return newstr;
-        }
-    }
-    newstr
 }
 
 fn cli_generate(args: Vec<String>) {
@@ -88,7 +68,7 @@ fn cli_generate(args: Vec<String>) {
     };
 
     println!(
-        "Successfully generated script\nThe container `{}` will be added to daemon\nDo you wish to continue?\n(Y/n)",
+                "Successfully generated script\nThe container `{}` will be added to daemon\nDo you wish to continue?\n(Y/n)",
         args[1]
     );
 
