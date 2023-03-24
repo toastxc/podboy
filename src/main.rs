@@ -1,13 +1,9 @@
-use std::env::Args;
-use std::io::stdin;
-
-pub mod bash;
-pub mod systemd;
-
-use crate::{
-    bash::{bash_exec, bash_spawn},
-    systemd::{create_systemd, rm_systemd},
+use podboy::system::{
+    bash::bash_spawn,
+    podman::podman_generate,
+    systemd::{list_systemd, rm_systemd, systemd_reset},
 };
+use std::env::Args;
 
 const HELP: &str = "generate <container>
 remove <container>
@@ -16,7 +12,10 @@ status <container>
 start <container>
 stop <container>
 enable <container>
-disabe <container>";
+disable <container>
+list";
+
+const DARRAY: [&str; 6] = ["start", "enable", "status", "stop", "disable", "restart"];
 
 #[tokio::main]
 async fn main() {
@@ -26,59 +25,42 @@ async fn main() {
         println!("{HELP}");
         return;
     };
-    if args.len() < 2 {
-        println!("{HELP}");
-        return;
-    };
 
     match &args[0] as &str {
-        "generate" | "gen" | "g" => cli_generate(args),
+        // no arg commands
+        "list" => println!("{}", list_systemd()),
+
+        // 2 arg
+        a if args.len() < 2 => {
+            println!("{a} requires more arguments")
+        }
+
+        a if DARRAY.contains(&a) => cli_systemd(args).await,
+
+        "generate" | "gen" | "g" => podman_generate(args),
         "remove" | "rm" | "r" => rm_systemd(&args[1]),
         "regen" | "regenerate" | "rg" => {
             rm_systemd(&args[1]);
-            cli_generate(args);
+            podman_generate(args);
         }
-        _ => cli_systemd(args).await,
-    }
+
+        // exceptions
+        _ => println!("{HELP}"),
+    };
+
+    systemd_reset()
 }
 
 // alias for basic systemd stuff
 async fn cli_systemd(args: Vec<String>) {
-    let wordlist = vec!["start", "enable", "status", "stop", "disable", "restart"];
+    let mut newargs = String::new();
+    for x in args {
+        newargs += &format!(" {x}");
+    }
 
-    let arg = format!("systemctl --user {} {}", args[0], args[1]);
+    let arg = format!("systemctl --user {}", newargs);
 
-    if wordlist.contains(&args[0].as_str()) {
-        bash_spawn(&arg).await;
-    };
-}
-
-fn cli_generate(args: Vec<String>) {
-    let script = match {
-        bash_exec(&format!(
-            "podman generate systemd {} --restart-policy always",
-            &args[1]
-        ))
-    } {
-        Ok(a) => a,
-        Err(e) => {
-            println!("{e}");
-            return;
-        }
-    };
-
-    println!(
-                "Successfully generated script\nThe container `{}` will be added to daemon\nDo you wish to continue?\n(Y/n)",
-        args[1]
-    );
-
-    let mut user_input = String::new();
-    stdin().read_line(&mut user_input).unwrap();
-
-    if let "y" | "Y" | "yes" | "Yes" = user_input.trim() as &str {
-        println!("Generating {}.service...", args[1]);
-        create_systemd(&args[1], &script);
-    };
+    bash_spawn(&arg).await;
 }
 
 fn argon(args: Args) -> Vec<String> {
