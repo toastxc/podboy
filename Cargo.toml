@@ -1,6 +1,6 @@
 [package]
 name = "podboy"
-version = "0.1.2"
+version = "0.1.3"
 edition = "2021"
 description = "A daemon system for podman"
 
@@ -8,3 +8,4 @@ description = "A daemon system for podman"
 
 [dependencies]
 tokio = { version = "1.26.0", features = ["full"] }
+

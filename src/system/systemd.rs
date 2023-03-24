@@ -1,5 +1,6 @@
-use crate::bash::bash_exec;
-use std::fs;
+use std::fs::{self};
+
+use super::bash::bash_exec;
 
 pub fn create_systemd(container: &str, script: &str) {
     let user = bash_exec("echo $USER").unwrap();
@@ -14,13 +15,6 @@ pub fn create_systemd(container: &str, script: &str) {
     fs::File::create(&path).unwrap();
 
     fs::write(&path, script).unwrap();
-
-    let result = match bash_exec("systemctl --user daemon-reload") {
-        Ok(_) => String::from("Script successfully added"),
-        Err(e) => e.to_string(),
-    };
-
-    println!("{result}");
 }
 
 pub fn rm_systemd(container: &str) {
@@ -37,7 +31,25 @@ pub fn rm_systemd(container: &str) {
         Err(e) => e.to_string(),
     };
 
-    bash_exec("systemctl --user daemon-reload").unwrap();
-
     println!("{res}");
+}
+
+pub fn list_systemd() -> String {
+    let user = bash_exec("echo $USER").unwrap();
+    let path = format!("/home/{user}/.config/systemd/user/");
+
+    let dir = std::fs::read_dir(path).unwrap();
+
+    let mut master = String::new();
+
+    for x in dir.flatten() {
+        if let Some(name) = x.file_name().to_str() {
+            master += &format!("\n{name}")
+        }
+    }
+    master
+}
+
+pub fn systemd_reset() {
+    bash_exec("systemctl --user daemon-reload").unwrap();
 }
