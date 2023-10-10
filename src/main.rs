@@ -1,74 +1,76 @@
-use podboy::system::{
-    bash::bash_spawn,
-    podman::podman_generate,
-    systemd::{list_systemd, rm_systemd, systemd_reset},
-};
-use std::env::Args;
+use podboy::HELP;
 
-const HELP: &str = "generate <container>
-remove <container>
-regen <container>
-status <container>
-start <container>
-stop <container>
-enable <container>
-disable <container>
-list";
+// true is for session
+pub const KW_SYSTEMD: [(&str, bool); 6] = [
+    ("start", false),
+    ("enable", false),
+    ("status", true),
+    ("stop", false),
+    ("disable", false),
+    ("restart", false),
+];
+pub const KW_PODMAN: [(&str, bool); 3] = [("logs", false), ("exec", true), ("attach", true)];
+pub const KW_HA: [(&str, bool); 5] = [
+    ("version", false),
+    ("regen", false),
+    ("gen", false),
+    ("rm", false),
+    ("ls", false),
+];
 
-const DARRAY: [&str; 6] = ["start", "enable", "status", "stop", "disable", "restart"];
+pub fn custom_contains(
+    input: Vec<(&str, bool)>,
+    value: impl Into<String> + Clone,
+) -> Option<(String, bool)> {
+    for item in input.into_iter() {
+        if item.0 == value.clone().into() {
+            return Some((item.0.to_string(), item.1));
+        };
+    }
+    None
+}
 
-#[tokio::main]
-async fn main() {
-    let args: Vec<String> = argon(std::env::args());
-
-    if args.is_empty() {
+fn main() {
+    let input: Vec<String> = std::env::args().collect();
+    if input.len() < 2 {
         println!("{HELP}");
         return;
     };
-
-    match &args[0] as &str {
-        // no arg commands
-        "list" => println!("{}", list_systemd()),
-
-        // 2 arg
-        a if args.len() < 2 => {
-            println!("{a} requires more arguments")
+    let a = match (
+        custom_contains(KW_PODMAN.to_vec(), input.get(1).unwrap()),
+        custom_contains(KW_SYSTEMD.to_vec(), input.get(1).unwrap()),
+        custom_contains(KW_HA.to_vec(), input.get(1).unwrap()),
+    ) {
+        (Some((_, attach)), _, _) => {
+            if input.len() < 3 {
+                println!("{HELP}");
+                return;
+            }
+            podboy::run_dual(attach, "podman", input).map(|_| ())},
+        (_, Some((_, attach)), _) => {
+            if input.len() < 3 {
+                println!("{HELP}");
+                return;
+            }
+            podboy::run_dual(attach, "systemctl --user", input).map(|_| ())
         }
-
-        a if DARRAY.contains(&a) => cli_systemd(args).await,
-
-        "generate" | "gen" | "g" => podman_generate(args),
-        "remove" | "rm" | "r" => rm_systemd(&args[1]),
-        "regen" | "regenerate" | "rg" => {
-            rm_systemd(&args[1]);
-            podman_generate(args);
+        (_, _, Some((cmd, _))) => match cmd.as_str() {
+            "version" => {
+                println!("{}", env!("CARGO_PKG_VERSION"));
+                Ok(())
+            }
+            "regen" | "gen" | "rm" | "ls" => podboy::ha::run(input),
+            _ => {
+                println!("{HELP}");
+                Ok(())
+            }
+        },
+        _ => {
+            println!("{HELP}");
+            Ok(())
         }
-
-        // exceptions
-        _ => println!("{HELP}"),
     };
-
-    systemd_reset()
-}
-
-// alias for basic systemd stuff
-async fn cli_systemd(args: Vec<String>) {
-    let mut newargs = String::new();
-    for x in args {
-        newargs += &format!(" {x}");
+    if let Some(error) = a.err() {
+        println!("{:?}", error);
     }
-
-    let arg = format!("systemctl --user {}", newargs);
-
-    bash_spawn(&arg).await;
-}
-
-fn argon(args: Args) -> Vec<String> {
-    let mut vec = Vec::new();
-
-    for x in args {
-        vec.push(x);
-    }
-    vec.remove(0);
-    vec
 }
