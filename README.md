@@ -16,13 +16,23 @@ cd podboy
 cargo b
 ```
 
-### Installation 
+### Faster installation (requires mold)
+```bash
+git clone https://github.com/toastxc/podboy.git
+cd podboy
+mold --run cargo b -r
+sudo cp ./target/release/podboy /usr/bin/
+```
+
+
+### Standard installation
 ```bash
 git clone https://github.com/toastxc/podboy.git
 cd podboy
 cargo b -r
 sudo cp ./target/release/podboy /usr/bin/
 ```
+
 
 ### Removal
 ```bash
