@@ -1,9 +1,21 @@
+use std::fmt::Formatter;
 use std::string::FromUtf8Error;
 pub type Result<T> = std::result::Result<T, Error>;
 #[derive(Debug)]
 pub enum Error {
     Io(std::io::Error),
     Utf8(FromUtf8Error),
+    Custom(String),
+}
+
+impl std::fmt::Display for Error {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let a = match self {
+            Error::Io(_) | Error::Utf8(_) => format!("{:?}", self),
+            Error::Custom(data) => format!("{data}\nTry running 'help'"),
+        };
+        write!(f, "{}", a)
+    }
 }
 impl From<std::io::Error> for Error {
     fn from(value: std::io::Error) -> Self {
@@ -15,22 +27,24 @@ impl From<FromUtf8Error> for Error {
         Self::Utf8(value)
     }
 }
+impl From<String> for Error {
+    fn from(value: String) -> Self {
+        Self::Custom(value)
+    }
+}
+impl From<&str> for Error {
+    fn from(value: &str) -> Self {
+        Self::Custom(value.to_string())
+    }
+}
 
 #[macro_export]
 macro_rules! error {
-    ($error:expr) => {{
-        println!("{}\n\nrun help for help", $error);
-        return Ok(());
-    }};
+    ($error:expr) => {
+        return Err($error.into())
+    };
 }
-#[macro_export]
-macro_rules! error_help {
-    () => {{
-        println!("{HELP}");
-        return Ok(());
-    }};
-}
-
+#[derive(Debug)]
 pub struct ErrorMsg;
 
 impl ErrorMsg {

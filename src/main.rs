@@ -2,13 +2,14 @@ use podboy::result::ErrorMsg;
 use podboy::{error, HELP};
 
 // true is for session
-pub const KW_SYSTEMD: [(&str, bool); 6] = [
+pub const KW_SYSTEMD: [(&str, bool); 7] = [
     ("start", false),
     ("enable", false),
     ("status", true),
     ("stop", false),
     ("disable", false),
     ("restart", false),
+    ("edit", true),
 ];
 pub const KW_PODMAN: [(&str, bool); 3] = [("logs", false), ("exec", true), ("attach", true)];
 pub const KW_HA: [&str; 4] = ["regen", "gen", "rm", "ls"];
@@ -34,13 +35,19 @@ pub fn custom_contains(input: Vec<&str>, value: impl Into<String> + Clone) -> Op
     None
 }
 
-fn main() -> podboy::result::Result<()> {
+fn main() {
+    if let Err(error) = main_wrap() {
+        println!("{error}");
+    }
+}
+
+fn main_wrap() -> podboy::result::Result<()> {
     let mut input: Vec<String> = std::env::args().collect();
     // remove useless argument
     input.remove(0);
 
     if input.is_empty() {
-        error!(ErrorMsg::CLI_MISUSE);
+        error!(HELP);
     };
 
     let argument = input.get(0).unwrap().to_ascii_lowercase();
