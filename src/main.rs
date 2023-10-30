@@ -52,13 +52,13 @@ fn main() -> podboy::result::Result<()> {
         custom_contains(KW_GENERAL.to_vec(), &argument),
     ) {
         (Some((_, attach)), _, _, _) => {
-            if input.len() < 3 {
+            if input.len() < 2 {
                 error!(ErrorMsg::CLI_MISUSE);
             }
             podboy::run_dual(attach, "podman", input).map(|_| ())
         }
         (_, Some((_, attach)), _, _) => {
-            if input.len() < 3 {
+            if input.len() < 2 {
                 error!(ErrorMsg::CLI_MISUSE);
             }
             podboy::run_dual(attach, "systemctl --user", input).map(|_| ())
@@ -78,7 +78,7 @@ fn main() -> podboy::result::Result<()> {
             Ok(())
         }
         _ => {
-            error!(ErrorMsg::CLI_MISUSE);
+            error!(ErrorMsg::CLI_UNKNOWN);
         }
     }
 }

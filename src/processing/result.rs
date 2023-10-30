@@ -39,5 +39,6 @@ impl ErrorMsg {
     pub const FILE_EXISTS: &str =
         "Could not create file, a file already exists with the same name and path";
     pub const CLI_MISUSE: &str = "The command line arguments given are malformed or incorrect";
+    pub const CLI_UNKNOWN: &str = "The command line argument is not one of the available options";
     pub const INVALID_CONTAINER: &str = "The given container does not exist";
 }
