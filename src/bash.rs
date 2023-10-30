@@ -40,7 +40,11 @@ pub struct Container;
 
 impl Container {
     pub fn path(container: impl Into<String>) -> Result<String> {
-        Ok(format!("{}{}.service", Self::dir()?, container.into()))
+        Ok(format!(
+            "{}{}.container.service",
+            Self::dir()?,
+            container.into()
+        ))
     }
     pub fn dir() -> crate::result::Result<String> {
         Ok(format!("/home/{}/.config/systemd/user/", Bash::username()?,))
@@ -52,6 +56,12 @@ impl Container {
         Bash::exec(format!(
             "podman generate systemd {} --restart-policy always",
             container.into()
+        ))
+    }
+    pub fn list() -> Result<String> {
+        Bash::exec(format!(
+            "ls {} | grep \".container.service\"",
+            Container::dir()?
         ))
     }
 }

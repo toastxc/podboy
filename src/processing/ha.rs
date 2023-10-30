@@ -1,4 +1,4 @@
-use crate::bash::{Bash, Container};
+use crate::bash::Container;
 use crate::result::{ErrorMsg, Result};
 use crate::{error, HELP};
 use std::io::Write;
@@ -17,7 +17,7 @@ pub fn run(args: Vec<String>) -> Result<()> {
         "gen" => gen(args),
         "rm" => rm(args),
         "ls" => {
-            println!("{}", Bash::exec(format!("ls {}", Container::dir()?))?);
+            println!("{}", Container::list()?);
             Ok(())
         }
         _ => {

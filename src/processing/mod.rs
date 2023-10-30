@@ -12,9 +12,13 @@ pub fn string_add(input: impl Into<Vec<String>>) -> String {
         .map(|item| format!("{item} "))
         .collect()
 }
-pub fn run_dual(cmd_type: bool, prefix: &str, args: Vec<String>) -> Result<Option<String>> {
+pub fn run_dual(cmd_type: bool, prefix: &str, mut args: Vec<String>) -> Result<Option<String>> {
     if prefix.contains("systemctl") {
         Systemd::reload()?;
+
+        let mut arg = args.remove(args.len() - 1);
+        arg += ".container";
+        args.push(arg);
     };
 
     if args.contains(&String::from("edit")) {
