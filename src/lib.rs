@@ -58,4 +58,3 @@ Runs rm & gen together
 ls
 List systemd files for local user
 ";
-

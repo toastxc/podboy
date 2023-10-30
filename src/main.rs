@@ -1,4 +1,5 @@
-use podboy::HELP;
+use podboy::result::ErrorMsg;
+use podboy::{error, HELP};
 
 // true is for session
 pub const KW_SYSTEMD: [(&str, bool); 6] = [
@@ -10,15 +11,10 @@ pub const KW_SYSTEMD: [(&str, bool); 6] = [
     ("restart", false),
 ];
 pub const KW_PODMAN: [(&str, bool); 3] = [("logs", false), ("exec", true), ("attach", true)];
-pub const KW_HA: [(&str, bool); 5] = [
-    ("version", false),
-    ("regen", false),
-    ("gen", false),
-    ("rm", false),
-    ("ls", false),
-];
+pub const KW_HA: [&str; 4] = ["regen", "gen", "rm", "ls"];
+pub const KW_GENERAL: [&str; 2] = ["version", "help"];
 
-pub fn custom_contains(
+pub fn custom_contains_bool(
     input: Vec<(&str, bool)>,
     value: impl Into<String> + Clone,
 ) -> Option<(String, bool)> {
@@ -29,48 +25,60 @@ pub fn custom_contains(
     }
     None
 }
+pub fn custom_contains(input: Vec<&str>, value: impl Into<String> + Clone) -> Option<String> {
+    for item in input.into_iter() {
+        if item == value.clone().into() {
+            return item.to_string().into();
+        };
+    }
+    None
+}
 
-fn main() {
-    let input: Vec<String> = std::env::args().collect();
-    if input.len() < 2 {
-        println!("{HELP}");
-        return;
+fn main() -> podboy::result::Result<()> {
+    let mut input: Vec<String> = std::env::args().collect();
+    // remove useless argument
+    input.remove(0);
+
+    if input.is_empty() {
+        error!(ErrorMsg::CLI_MISUSE);
     };
-    let a = match (
-        custom_contains(KW_PODMAN.to_vec(), input.get(1).unwrap()),
-        custom_contains(KW_SYSTEMD.to_vec(), input.get(1).unwrap()),
-        custom_contains(KW_HA.to_vec(), input.get(1).unwrap()),
+
+    let argument = input.get(0).unwrap().to_ascii_lowercase();
+
+    match (
+        custom_contains_bool(KW_PODMAN.to_vec(), &argument),
+        custom_contains_bool(KW_SYSTEMD.to_vec(), &argument),
+        custom_contains(KW_HA.to_vec(), &argument),
+        custom_contains(KW_GENERAL.to_vec(), &argument),
     ) {
-        (Some((_, attach)), _, _) => {
+        (Some((_, attach)), _, _, _) => {
             if input.len() < 3 {
-                println!("{HELP}");
-                return;
+                error!(ErrorMsg::CLI_MISUSE);
             }
-            podboy::run_dual(attach, "podman", input).map(|_| ())},
-        (_, Some((_, attach)), _) => {
+            podboy::run_dual(attach, "podman", input).map(|_| ())
+        }
+        (_, Some((_, attach)), _, _) => {
             if input.len() < 3 {
-                println!("{HELP}");
-                return;
+                error!(ErrorMsg::CLI_MISUSE);
             }
             podboy::run_dual(attach, "systemctl --user", input).map(|_| ())
         }
-        (_, _, Some((cmd, _))) => match cmd.as_str() {
-            "version" => {
-                println!("{}", env!("CARGO_PKG_VERSION"));
-                Ok(())
-            }
+        (_, _, Some(cmd), _) => match cmd.as_str() {
             "regen" | "gen" | "rm" | "ls" => podboy::ha::run(input),
             _ => {
-                println!("{HELP}");
-                Ok(())
+                error!(ErrorMsg::CLI_MISUSE);
             }
         },
-        _ => {
-            println!("{HELP}");
+        (_, _, _, Some(arg)) => {
+            match arg.as_str() {
+                "version" => println!("{}", env!("CARGO_PKG_VERSION")),
+                "help" => println!("{HELP}"),
+                _ => unreachable!(),
+            };
             Ok(())
         }
-    };
-    if let Some(error) = a.err() {
-        println!("{:?}", error);
+        _ => {
+            error!(ErrorMsg::CLI_MISUSE);
+        }
     }
 }

@@ -7,7 +7,7 @@ impl Bash {
         if attach {
             Bash::spawn(command).map(|_| None)
         } else {
-            Bash::exec(command).map(|a|Some(a))
+            Bash::exec(command).map(|a| a.into())
         }
     }
     pub fn spawn(args: &str) -> Result<()> {
