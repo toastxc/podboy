@@ -1,9 +1,9 @@
 use crate::bash::Container;
-use crate::result::{ErrorMsg, Result};
-use crate::{error, HELP};
-use std::io::Write;
+use crate::{Result, HELP};
+use std::io::{ErrorKind, Write};
+
 pub fn run(args: Vec<String>) -> Result<()> {
-    let arg = args.get(0).unwrap().as_str();
+    let arg = args.first().unwrap().as_str();
 
     if args.len() < 2 && arg != "ls" {
         println!("{HELP}");
@@ -21,7 +21,8 @@ pub fn run(args: Vec<String>) -> Result<()> {
             Ok(())
         }
         _ => {
-            error!(ErrorMsg::CLI_MISUSE);
+            // error!(ErrorMsg::CLI_MISUSE);
+            Err(std::io::Error::new(ErrorKind::InvalidInput, "CLI arguments failed").into())
         }
     }
 }
@@ -38,12 +39,14 @@ pub fn gen(args: Vec<String>) -> Result<()> {
     let path = Container::path(args.get(1).unwrap())?;
 
     if std::fs::read(&path).is_ok() {
-        error!(ErrorMsg::FILE_EXISTS)
+        return Err(std::io::Error::new(ErrorKind::AlreadyExists, "Could not create file").into());
     };
 
     let container = Container::generate(args.get(1).unwrap())?;
     if container.contains("no such container") {
-        error!(ErrorMsg::INVALID_CONTAINER)
+        return Err(
+            std::io::Error::new(ErrorKind::NotFound, "Container could not be found").into(),
+        );
     };
     let mut file = std::fs::File::create(&path)?;
     file.write_all(container.as_bytes())?;

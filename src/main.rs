@@ -1,5 +1,5 @@
-use podboy::result::ErrorMsg;
-use podboy::{error, HELP};
+use podboy::HELP;
+use std::io::ErrorKind;
 
 // true is for session
 pub const KW_SYSTEMD: [(&str, bool); 7] = [
@@ -41,16 +41,17 @@ fn main() {
     }
 }
 
-fn main_wrap() -> podboy::result::Result<()> {
+fn main_wrap() -> podboy::Result<()> {
     let mut input: Vec<String> = std::env::args().collect();
     // remove useless argument
     input.remove(0);
 
     if input.is_empty() {
-        error!(HELP);
+        println!("{HELP}");
+        return Ok(());
     };
 
-    let argument = input.get(0).unwrap().to_ascii_lowercase();
+    let argument = input.first().unwrap().to_ascii_lowercase();
 
     match (
         custom_contains_bool(KW_PODMAN.to_vec(), &argument),
@@ -58,22 +59,29 @@ fn main_wrap() -> podboy::result::Result<()> {
         custom_contains(KW_HA.to_vec(), &argument),
         custom_contains(KW_GENERAL.to_vec(), &argument),
     ) {
-        (Some((_, attach)), _, _, _) => {
+        (Some((_, _)), _, _, _) => {
             if input.len() < 2 {
-                error!(ErrorMsg::CLI_MISUSE);
+                // error!(ErrorMsg::CLI_MISUSE);
+                return Err(
+                    std::io::Error::new(ErrorKind::InvalidInput, "Invalid CLI arguments").into(),
+                );
             }
-            podboy::run_dual(attach, "podman", input).map(|_| ())
+            podboy::run_dual("podman", input).map(|_| ())
         }
-        (_, Some((_, attach)), _, _) => {
+        (_, Some((_, _)), _, _) => {
             if input.len() < 2 {
-                error!(ErrorMsg::CLI_MISUSE);
+                // error!(ErrorMsg::CLI_MISUSE);
+                return Err(
+                    std::io::Error::new(ErrorKind::InvalidInput, "Invalid CLI arguments").into(),
+                );
             }
-            podboy::run_dual(attach, "systemctl --user", input).map(|_| ())
+            Ok(podboy::run_dual("systemctl --user", input).map(|_| ())?)
         }
         (_, _, Some(cmd), _) => match cmd.as_str() {
             "regen" | "gen" | "rm" | "ls" => podboy::ha::run(input),
             _ => {
-                error!(ErrorMsg::CLI_MISUSE);
+                // error!(ErrorMsg::CLI_MISUSE);
+                Err(std::io::Error::new(ErrorKind::InvalidInput, "Invalid CLI arguments").into())
             }
         },
         (_, _, _, Some(arg)) => {
@@ -85,7 +93,8 @@ fn main_wrap() -> podboy::result::Result<()> {
             Ok(())
         }
         _ => {
-            error!(ErrorMsg::CLI_UNKNOWN);
+            // error!(ErrorMsg::CLI_UNKNOWN);
+            Err(std::io::Error::new(ErrorKind::InvalidInput, "Invalid CLI arguments").into())
         }
     }
 }

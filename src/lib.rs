@@ -58,3 +58,4 @@ Runs rm & gen together
 ls
 List systemd files for local user
 ";
+pub type Result<T> = core::result::Result<T, anyhow::Error>;

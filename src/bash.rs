@@ -1,15 +1,8 @@
-use crate::result::Result;
+use crate::Result;
 use std::process::Command;
 
 pub struct Bash;
 impl Bash {
-    pub fn cmd(command: impl Into<String>, attach: bool) -> Result<Option<String>> {
-        if attach {
-            Bash::spawn(command).map(|_| None)
-        } else {
-            Bash::exec(command).map(|a| a.into())
-        }
-    }
     pub fn spawn(args: impl Into<String>) -> Result<()> {
         Ok(Bash::common(args).spawn()?.wait()?).map(|_| ())
     }
@@ -30,9 +23,7 @@ impl Bash {
     }
 
     pub fn username() -> Result<String> {
-        let username = Self::cmd("echo $USER", false)?.unwrap();
-        let username = username.trim();
-        Ok(username.to_string())
+        Ok(Self::exec("echo $USER")?.trim().to_string())
     }
 }
 
@@ -46,7 +37,7 @@ impl Container {
             container.into()
         ))
     }
-    pub fn dir() -> crate::result::Result<String> {
+    pub fn dir() -> Result<String> {
         Ok(format!("/home/{}/.config/systemd/user/", Bash::username()?,))
     }
     pub fn exists(container: impl Into<String>) -> Result<bool> {
