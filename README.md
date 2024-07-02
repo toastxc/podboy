@@ -31,10 +31,6 @@ sudo rm /usr/bin/podboy
 ```
 
 ### Compatibility
-This program was designed, tested, compiled and made for GNU/Linux systems and as such there is likely no support for non POSIX systems.
-The program relies on `bash`, `systemd` and `podman` so if any of these are missing.
-
-While it may be possible to add support for NT based operating systems it is not a focus for us, and will not receive support.
-However if there is a feature complete fork of PodboY for Windows made we will link to it in the description of this project.
+Software compatiblity is subject to https://toastxc.xyz/policies#windows
 
 ![LGPLv3 Badge](/README_RESOURCES/LGPLv3%20Logo.svg)
