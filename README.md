@@ -6,29 +6,21 @@
 
 </h1>
 
+
 Podboy (styled podboy or PodboY) is a simple daemon manager for Podman, similar to docker's daemon.
 
-### Install (Cargo)
+### Install
 ```bash
 cargo install podboy
 ```
-### Install (Linux)
-```bash
-git clone https://github.com/toastxc/podboy.git
-cd podboy
-cargo b -r
-sudo cp ./target/release/podboy /usr/bin/
-```
 
-### Remove (cargo)
+### Remove
 ```bash
 cargo uninstall podboy
 ```
 
-### Remove (Linux)
-```bash
-sudo rm /usr/bin/podboy
-```
+### Usage
+CLI usage can be found with `podboy help`.
 
 ### Compatibility
 Software compatiblity is subject to https://toastxc.xyz/policies#windows

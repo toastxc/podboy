@@ -40,27 +40,11 @@ impl Container {
     pub fn dir() -> Result<String> {
         Ok(format!("/home/{}/.config/systemd/user/", Bash::username()?,))
     }
-    pub fn exists(container: impl Into<String>) -> Result<bool> {
-        Ok(std::fs::read(Self::path(container)?).map(|_| ()).is_ok())
-    }
+
     pub fn generate(container: impl Into<String>) -> Result<String> {
         Bash::exec(format!(
             "podman generate systemd {} --restart-policy always",
             container.into()
         ))
-    }
-    pub fn list() -> Result<String> {
-        Bash::exec(format!(
-            "ls {} | grep \".container.service\"",
-            Container::dir()?
-        ))
-    }
-}
-
-pub struct Systemd;
-
-impl Systemd {
-    pub fn reload() -> Result<()> {
-        Bash::exec("systemctl --user daemon-reload").map(|_| ())
     }
 }
