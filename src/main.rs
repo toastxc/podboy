@@ -31,6 +31,11 @@ fn main() {
                 .about(doc("enable")),
         )
         .subcommand(
+            Command::new("disable")
+                .arg(Arg::new("cname"))
+                .about(doc("disable")),
+        )
+        .subcommand(
             Command::new("restart")
                 .arg(Arg::new("cname"))
                 .about(doc("disable")),
